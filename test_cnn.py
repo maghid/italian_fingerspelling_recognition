@@ -3,45 +3,46 @@ import numpy as np
 from keras.preprocessing.image import ImageDataGenerator
 from keras import backend as K
 from sklearn.metrics import confusion_matrix, classification_report
-import BR_cnn_model
+import matplotlib.pyplot as plt
+import cnn_model
+import cnn_model_batch_normalization as cnn_model_bn
 import predict_utils as testing
-
+import confusion_matrix_plot as cm_plot
 # Use GPU with theano
 os.environ["THEANO_FLAGS"] = "mode=FAST_RUN, device=cuda, floatX=float32"
 
-v = str(7.2) # weights version
-
 ###### WEIGHTS, uncomment weights for desired model ######
 ## Dataset 1
-WEIGHTS = 'weights/BR_CNN_model_DatasetGualandi_v' + v + '_250.h5'
+WEIGHTS = "weights/BR_CNN_model_DatasetGualandi_v7.2_250.h5"
 ## Dataset 2
-# WEIGHTS = 'weights/BR_CNN_model_DatasetGualandi_v' + v + '_250.h5'
+#WEIGHTS = "weights/dataset2_noBatchNormalization_150e.h5"
 ## Dataset 3
-# WEIGHTS = 'weights/BR_CNN_model_DatasetGualandi_v' + v + '_250.h5'
+#WEIGHTS = "weights/dataset3_noBatchNormalization_50e.h5"
 
 ###### Testing data folders, uncomment desired test ######
 ## Signer Dependent, Dataset 1 (all angles)
-#TESTING_IMG_FOLDER = "../../datasets_and_tests/GUALANDI_DATASETS/DatasetGualandi_v" + v + "/testing"
+#TESTING_IMG_FOLDER = "dataset/dataset1/testing/"
 ## Signer Dependent, Dataset 2 (top, bottom, front)
-#TESTING_IMG_FOLDER = "../../DatasetGualandi_v7.2noLeftRight/testing"
+TESTING_IMG_FOLDER = "dataset/dataset2/testing/"
 ## Signer Dependent, Dataset 3 (front) 
-#TESTING_IMG_FOLDER = ""
+#TESTING_IMG_FOLDER = "dataset/dataset3/testing/"
 
 ## Signer Independent, Dataset 1 (all angles)
-TESTING_IMG_FOLDER = "../../datasets_and_tests/GUALANDI_TESTS/TestSignerIndepent_v1"
+#TESTING_IMG_FOLDER = "dataset/dataset1-signer-independent-test"
 ## Signer Independent, Dataset 2 (top, bottom, front)
-#TESTING_IMG_FOLDER = "../../TestSignerIndependent_v1noLeftRight"
+#TESTING_IMG_FOLDER = "dataset/dataset2-signer-independent-test"
 ## Signer Independent, Dataset 3 (front)
-#TESTING_IMG_FOLDER = ""
+#TESTING_IMG_FOLDER = "dataset/dataset3-signer-independent-test"
 
 ###### Number of testing samples, uncomment desired test ######
 #NB_SAMPLES = 1220 # Signer Dependent, Dataset 1
-#NB_SAMPLES = 0 # Signer Dependent, Dataset 2
-#NB_SAMPLES = 0 # Signer Dependent, Dataset 3
-NB_SAMPLES = 808 # Signer Independent, Dataset 1
+#NB_SAMPLES = 732 # Signer Dependent, Dataset 2
+#NB_SAMPLES = 238 # Signer Dependent, Dataset 3
+#NB_SAMPLES = 808 # Signer Independent, Dataset 1
 #NB_SAMPLES = 474 # Signer Independent, Dataset 2
 #NB_SAMPLES = 155 # Signer Independent, Dataset 3
 
+NB_SAMPLES = 2952
 # Image dimensions
 img_width, img_height = 64, 64
 #img_width, img_height = 200, 133
@@ -58,7 +59,7 @@ else:
     input_shape = (img_width, img_height, 3)
 
 # Instantiate model
-model = BR_cnn_model.istantiate_model(input_shape, False)
+model = cnn_model.istantiate_model(input_shape, False)
 print "INFO: Model instantiated"
 # Compile model
 model.compile(loss='categorical_crossentropy',
@@ -76,7 +77,7 @@ test_datagen = ImageDataGenerator(
     horizontal_flip=False)
 
 testing_generator = test_datagen.flow_from_directory(
-    TESTING_IMG_FOLDER,
+    "dataset/dataset1/validation",
     target_size=(img_width, img_height),
     batch_size=64,
     class_mode='categorical',
@@ -101,4 +102,5 @@ print ""
 # PREDICT
 print "PREDICTIONS"
 print ""
-testing.predict_from_folder(TESTING_IMG_FOLDER, img_width, img_height, model, sign_labels, WEIGHTS)
+testing.predict_from_folder("dataset/dataset1/validation", img_width, img_height, model, sign_labels, WEIGHTS)
+

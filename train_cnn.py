@@ -10,14 +10,16 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras import backend as K
 from keras.optimizers import Adam
 from hyperdash import Experiment
+from keras.callbacks import EarlyStopping
 import cnn_model
 import cnn_model_batch_normalization as cnn_model_bn
 
 ##### Before running check: ########
 # DATASET_FOLDER                   #
 # nb_train_samples                 #
-# strings with BatchNormalization  # 
+# test_type                        # 
 # epochs                           #
+# model                            #
 ####################################
 
 # Use GPU with theano
@@ -43,7 +45,7 @@ testing_data_dir = DATASET_FOLDER + "/testing"
 
 # Number of samples (uncomment accordingly to chosen dataset)
 #nb_train_samples = 6028 # dataset 1
-nb_train_samples = 2959 # dataset 2
+nb_train_samples = 3484 # dataset 2
 #nb_train_samples = 1105 # dataset 3
 
 #nb_validation_samples = 2952 # dataset 1
@@ -54,10 +56,13 @@ nb_validation_samples = 1738 # dataset 2
 nb_testing_samples = 732 # dataset 2
 #nb_testing_samples = 238 # dataset 3
 
-epochs = 150
+epochs = 250
 batch_size = 64
+#test_type = "_1epochTest_"
+test_type = "_noBatchNormalization_"
+#test_type = "_3BatchNorm_"
 
-weights_name = "weights/" + DATASET_FOLDER.split("/")[1] + "_3BatchNormalization" + str(epochs)+ "e" + ".h5" # Location where to save weights
+weights_name = "weights/" + DATASET_FOLDER.split("/")[1] + test_type + str(epochs)+ "e" + ".h5" # Location where to save weights
 
 # detecting img data format
 if K.image_data_format() == 'channels_first':
@@ -66,7 +71,8 @@ else:
     input_shape = (img_width, img_height, 3)
 
 # Istantiate and compile model
-model = cnn_model_bn.istantiate_model(input_shape)
+#model = cnn_model.istantiate_model(input_shape)
+model = cnn_model.istantiate_model(input_shape)
 
 model.compile(loss='categorical_crossentropy',
               optimizer='adam'  ,
@@ -105,6 +111,9 @@ testing_generator = test_datagen.flow_from_directory(
     batch_size=batch_size,
     class_mode='categorical')
 
+# Early Stopping callback
+early_stopping = EarlyStopping(monitor='val_loss', patience=2)
+
 history = model.fit_generator(
     train_generator,
     steps_per_epoch=nb_train_samples // batch_size,
@@ -116,45 +125,45 @@ history = model.fit_generator(
 model.save_weights(weights_name) # saving weights
 
 # Evaluate model
-score = model.evaluate_generator(validation_generator, nb_validation_samples//batch_size, workers=12, pickle_safe=False)
-print "Evaluate generator esults:"
-print "Evaluate loss: " + score[0]
-print "Evaluate accuracy: " + score[1]
+score = model.evaluate_generator(validation_generator, nb_validation_samples//batch_size, workers=12, use_multiprocessing=False)
+print "Evaluate generator results:"
+print "Evaluate loss: " + str(score[0])
+print "Evaluate accuracy: " + str(score[1])
 
 # Predict model
-scores = model.predict_generator(testing_generator, nb_testing_samples//batch_size, workers=12)
-print "Predict generator: " + scores
+#scores = model.predict_generator(testing_generator, nb_testing_samples//batch_size, workers=12)
+#print "Predict generator: " + scores
 
 # Save loss on txt
 loss_history = history.history["loss"]
 numpy_loss_history = numpy.array(loss_history)
-numpy.savetxt("statistics/"+ DATASET_FOLDER.split("/")[1] + "/loss_history"+ "_3BatchNormalization_" + str(epochs)+ "e" + ".txt", numpy_loss_history*100, delimiter=",")
+numpy.savetxt("statistics/"+ DATASET_FOLDER.split("/")[1] + "/loss_history"+ test_type + str(epochs)+ "e" + ".txt", numpy_loss_history*100, delimiter=",")
 min_loss = numpy.amin(numpy_loss_history)
-print "MIN LOSS: " + min_loss
+print "MIN LOSS: " + str(min_loss)
 
 # Save val_loss on txt
 val_loss_history = history.history["val_loss"]
 numpy_val_loss_history = numpy.array(val_loss_history)
-numpy.savetxt("statistics/"+ DATASET_FOLDER.split("/")[1] + "/val_loss_history"+ "_3BatchNormalization_" + str(epochs)+ "e" + ".txt", numpy_val_loss_history*100, delimiter=",")
+numpy.savetxt("statistics/"+ DATASET_FOLDER.split("/")[1] + "/val_loss_history"+ test_type + str(epochs)+ "e" + ".txt", numpy_val_loss_history*100, delimiter=",")
 min_val_loss = numpy.amin(numpy_val_loss_history)
-print "MIN VAL LOSS: " +  max_val_loss
+print "MIN VAL LOSS: " +  str(min_val_loss)
 
 #Save acc on txt
 acc_history = history.history["acc"]
 numpy_acc_history = numpy.array(acc_history)
-numpy.savetxt("statistics/"+ DATASET_FOLDER.split("/")[1] + "/acc_history"+ "_3BatchNormalization_" + str(epochs)+ "e" +".txt", numpy_acc_history*100, delimiter=",")
+numpy.savetxt("statistics/"+ DATASET_FOLDER.split("/")[1] + "/acc_history"+ test_type + str(epochs)+ "e" +".txt", numpy_acc_history*100, delimiter=",")
 max_acc = numpy.amax(numpy_acc_history)
-print "MAX ACC: ", max_acc
+print "MAX ACC: " + str(max_acc)
 
 #Save val_acc on txt
 val_acc_history = history.history["val_acc"]
 numpy_val_acc_history = numpy.array(val_acc_history)
-numpy.savetxt("statistics/"+ DATASET_FOLDER.split("/")[1] + "/val_acc_history" + "_3BatchNormalization_" + str(epochs)+ "e" +".txt", numpy_val_acc_history*100, delimiter=",")
+numpy.savetxt("statistics/"+ DATASET_FOLDER.split("/")[1] + "/val_acc_history" + test_type + str(epochs)+ "e" +".txt", numpy_val_acc_history*100, delimiter=",")
 max_val_acc = numpy.amax(numpy_val_acc_history)
-print "MAX VAL ACC: ", max_val_acc
+print "MAX VAL ACC: " + str(max_val_acc)
 
 # Save maximums on txt
-maxs = numpy.array([max_loss, max_val_loss, max_acc, max_val_acc])
+maxs = numpy.array([min_loss, min_val_loss, max_acc, max_val_acc])
 numpy.savetxt("statistics/" + DATASET_FOLDER.split("/")[1] + "/3BatchNormalization_" + str(epochs)+ "e" + "maximums.txt", maxs, delimiter=",")
 
 # Plotting 
@@ -178,7 +187,7 @@ plt.xlabel('epoch')
 plt.legend(['train', 'val'], loc='upper left')
 
 #Save img
-fig1.savefig(PLOT_FOLDER + "/accuracy_plot"+ "_3BatchNormalization_" + str(epochs)+ "e" +  ".png")
+fig1.savefig(PLOT_FOLDER + "/accuracy_plot"+ test_type + str(epochs)+ "e" +  ".png")
 
 # Val loss and train loss evolution during training for each version
 # Summarize history for loss
@@ -192,7 +201,7 @@ plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['loss', 'val_loss'], loc='upper left')
 #Save img
-fig2.savefig(PLOT_FOLDER + "/loss_plot"+ "_3BatchNormalization_" + str(epochs)+ "e" +  ".png")
+fig2.savefig(PLOT_FOLDER + "/loss_plot"+ test_type + str(epochs)+ "e" +  ".png")
 
 
 
