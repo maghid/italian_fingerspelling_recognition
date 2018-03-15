@@ -19,5 +19,6 @@ Fore more info see `documentation.pdf`
 **train_cnn.py**  *model training*  
 **test_cnn.py**   *model testing (confusion matrix and predict)*  
 
+This repo contains weights, statistics and plots for the base model trained on dataset 1 (250 epochs), dataset 2 (150 epochs) and dataset 3 (50 epochs).
 ## Credits
 Margherita Donnici & Gianluca Monica
