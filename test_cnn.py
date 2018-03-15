@@ -13,7 +13,7 @@ os.environ["THEANO_FLAGS"] = "mode=FAST_RUN, device=cuda, floatX=float32"
 
 ###### WEIGHTS, uncomment weights for desired model ######
 ## Dataset 1
-WEIGHTS = "weights/BR_CNN_model_DatasetGualandi_v7.2_250.h5"
+WEIGHTS = "weights/dataset1_noBatchNormalization_250e.h5"
 ## Dataset 2
 #WEIGHTS = "weights/dataset2_noBatchNormalization_150e.h5"
 ## Dataset 3
