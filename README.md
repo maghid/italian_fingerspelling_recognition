@@ -1,4 +1,5 @@
 # italian_fingerspelling_recognition
+
 Dataset + convolutional neural network for recognizing Italian Sign Language (LIS) fingerspelling gestures.  
 CNN with Keras for recognizing letters of the alphabet in LIS (22 classes).   
 Fore more info see `documentation.pdf`  
