@@ -21,5 +21,9 @@ Fore more info see `documentation.pdf`
 **test_cnn.py**   *model testing (confusion matrix and predict)*  
 
 This repo contains weights, statistics and plots for the base model trained on dataset 1 (250 epochs), dataset 2 (150 epochs) and dataset 3 (50 epochs).
+
+## Dataset
+The complete dataset is downloadable at the following link: https://drive.google.com/file/d/1AFcb2VnGCn2OslIlB6kFpVDAS3PMNqvs/view?usp=sharing
+
 ## Credits
 Margherita Donnici & Gianluca Monica
